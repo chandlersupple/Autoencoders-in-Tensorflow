@@ -51,7 +51,7 @@ class Autoencoder():
     def batch(self, batch_size, batch_iter):
         batch_iarr = []
         for inst in range (batch_iter * batch_size + 1, batch_iter * batch_size + batch_size + 1):
-            image_inst = image.load_img(('dog.%s.jpg' %(inst)), color_mode= 'grayscale', target_size = [64, 64])
+            image_inst = image.load_img(('dog.%s.jpg' %(inst)), color_mode= 'grayscale', target_size = [64, 64]) # Assuming all your images have the same base name and are followed by a number, modify the part which says 'dog' to your base name
             inst_arr = image.img_to_array(image_inst)
             inst_flat = np.reshape(inst_arr, [4096])
             batch_iarr.append(inst_flat)
