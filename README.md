@@ -1,2 +1,1 @@
-# Autoencoders-in-Tensorflow
-Two autoencoders -- a vanilla and convolutional model -- built in Tensorflow.
+The following programs require a 64x64 image as input. You'll have to place all of the images for your training set in a folder, and then set that given folder as the working directory. Modifications need to be made at only a single point in the code which I've marked with a comment.
