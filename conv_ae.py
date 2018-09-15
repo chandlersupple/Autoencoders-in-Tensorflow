@@ -1,5 +1,5 @@
-import numpy as np
 import tensorflow as tf
+import numpy as np
 from keras.preprocessing import image
 sess = tf.InteractiveSession()
 
@@ -9,17 +9,20 @@ class Autoencoder():
         self.x = tf.placeholder(tf.float32, [None, 4096])
         x_4D = tf.reshape(self.x, [-1, 64, 64, 1])
         
-        conv1 = tf.layers.conv2d(inputs= x_4D, filters= 1024, kernel_size= (5, 5), strides= (3, 3), padding= 'SAME')
-        conv2 = tf.layers.conv2d(inputs= conv1, filters= 512, kernel_size= (5, 5), strides= (3, 3), padding= 'SAME')
-        self.E = tf.layers.conv2d(inputs= conv2, filters= 256, kernel_size= (5, 5), strides= (3, 3), padding= 'SAME')
+        conv1 = tf.layers.conv2d(inputs= x_4D, filters= 64, kernel_size= (5, 5), strides= (3, 3), padding= 'SAME')
+        conv2 = tf.layers.conv2d(inputs= conv1, filters= 64, kernel_size= (5, 5), strides= (3, 3), padding= 'SAME')
+        conv3 = tf.layers.conv2d(inputs= conv2, filters= 64, kernel_size= (5, 5), strides= (3, 3), padding= 'SAME')
+        flat_convE = tf.contrib.layers.flatten(conv3)
+        self.E = tf.layers.dense(flat_convE, 64, activation= tf.nn.relu)
         
-        us1 = tf.image.resize_images(self.E, size= (9, 9), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-        conv3 = tf.layers.conv2d(inputs= us1, filters= 512, kernel_size= (5, 5), padding= 'SAME')
-        us2 = tf.image.resize_images(conv3, size= (22, 22), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-        conv4 = tf.layers.conv2d(inputs= us2, filters= 1024, kernel_size= (5, 5), padding= 'SAME')
-        us3 = tf.image.resize_images(conv4, size= (64, 64), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+        resh_E = tf.reshape(self.E, [-1, 8, 8, 1])
+        us1 = tf.image.resize_images(resh_E, size= (8, 8), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+        conv4 = tf.layers.conv2d(inputs= us1, filters= 64, kernel_size= (5, 5), padding= 'SAME')
+        us2 = tf.image.resize_images(conv4, size= (22, 22), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+        conv5 = tf.layers.conv2d(inputs= us2, filters= 64, kernel_size= (5, 5), padding= 'SAME')
+        us3 = tf.image.resize_images(conv5, size= (64, 64), method= tf.image.ResizeMethod.NEAREST_NEIGHBOR)
         self.D = tf.layers.conv2d(inputs= us3, filters= 1, kernel_size= (5, 5), padding= 'SAME')
-                
+        
         self.loss = tf.losses.mean_squared_error(x_4D, self.D)
         self.optimizer = tf.train.AdamOptimizer(0.001).minimize(self.loss)
         
@@ -37,14 +40,13 @@ class Autoencoder():
         batch_iarr = []
         for inst in range (batch_iter * batch_size + 1, batch_iter * batch_size + batch_size + 1):
             image_inst = image.load_img(('Img-%s.jpg' %(inst)), color_mode= 'grayscale', target_size = [64, 64])
-            # Change 'Img-%s.jpg' in accordance to the names of the photos in your training set
             inst_arr = image.img_to_array(image_inst)
             inst_flat = np.reshape(inst_arr, [4096])
             batch_iarr.append(inst_flat)
         return batch_iarr
 
 batch_size = 32
-batches_in_epoch = 13000 // batch_size # '13000' represents the number of images in the training set
+batches_in_epoch = 13000 // batch_size
 ae = Autoencoder()
 
 for epoch in range (128):
